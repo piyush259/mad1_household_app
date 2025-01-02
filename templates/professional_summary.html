@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="container mt-4">
+    <h1>Professional Summary</h1>
+    <hr>
+    <div class="row">
+        <!-- Ratings Pie Chart -->
+        <div class="col-md-6">
+            <h3>Reviews/Ratings</h3>
+            <canvas id="ratingsChart"></canvas>
+        </div>
+        <!-- Service Requests Bar Chart -->
+        <div class="col-md-6">
+            <h3>Service Requests</h3>
+            <canvas id="serviceRequestsChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Fetch data from the server
+        fetch("{{ url_for('main.get_summary_data') }}")
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                // Ratings Chart Data
+                const ratingsData = data.ratings;
+                const ratingsCtx = document.getElementById('ratingsChart').getContext('2d');
+                new Chart(ratingsCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['5 Stars', '4 Stars', '3 Stars', '2 Stars', '1 Star'],
+                        datasets: [{
+                            label: 'Ratings Distribution',
+                            data: [
+                                ratingsData["5_stars"],
+                                ratingsData["4_stars"],
+                                ratingsData["3_stars"],
+                                ratingsData["2_stars"],
+                                ratingsData["1_stars"]
+                            ],
+                            backgroundColor: ['#4CAF50', '#2196F3', '#FFC107', '#FF5722', '#9E9E9E'],
+                        }]
+                    },
+                    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: 1.5, // Adjust this to control the chart size
+    }
+                });
+
+                // Service Requests Chart Data
+                const serviceRequestsData = data.service_requests;
+                const requestsCtx = document.getElementById('serviceRequestsChart').getContext('2d');
+                new Chart(requestsCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Received','On Progress', 'Closed', 'Rejected'],
+                        datasets: [{
+                            label: 'Service Requests',
+                            data: [
+                                serviceRequestsData["received"],
+                                serviceRequestsData["assigned"],
+                                serviceRequestsData["closed"],
+                                serviceRequestsData["rejected"]
+                            ],
+                            backgroundColor: ['#2196F3','#FFC107', '#4CAF50', '#FF5722']
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching summary data:', error));
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white text-center py-2">
+                    <h5 class="mb-0">Service Requests Summary</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h6 class="text-secondary mb-2">Total Service Requests Received</h6>
+                    <div class="p-2 rounded text-white" style="background-color: #ff6c67;">
+                        <h3 class="mb-0">{{ status_counts.requested }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock body %}

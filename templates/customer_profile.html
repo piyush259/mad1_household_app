@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="container my-5">
+    <!-- Profile Card -->
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white text-center py-4">
+            <h2 class="mb-0">My Profile</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <!-- Profile Picture and Name -->
+                <div class="col-md-4 text-center">
+                  
+                    <h3 class="text-primary">{{ customer.user.name }}</h3>
+                </div>
+                <!-- Profile Details -->
+                <div class="col-md-8">
+                    <table class="table table-borderless">
+                        <tbody>
+                            <tr>
+                                <th scope="row" class="text-muted">Email:</th>
+                                <td>{{ customer.user.email }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="text-muted">Username:</th>
+                                <td>{{ customer.user.username }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="text-muted">Phone Number:</th>
+                                <td>{{ customer.user.phone_number }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="text-muted">Address:</th>
+                                <td>{{ customer.user.address or 'Not Provided' }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="text-muted">State:</th>
+                                <td>{{ customer.user.state or 'Not Provided' }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="text-muted">Pincode:</th>
+                                <td>{{ customer.user.pincode or 'Not Provided' }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="text-muted">Account Created:</th>
+                                <td>{{ customer.user.date_created.strftime('%Y-%m-%d') }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- Edit Button -->
+        <div class="card-footer text-end">
+            <a href="/edit_customer_profile" class="btn btn-primary">
+                Edit Profile
+            </a>
+        </div>
+        <div class="card-footer text-end">
+            <a href="/delete_customer_profile" class="btn btn-danger">
+                Delete Account
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block body %}
+
+<div class="container">
+    <h1 style="text-align: center;" class="my-3">Add a new Service for {{ category.name }}</h1>
+    <form method="POST" onsubmit="return validatePrice();">
+        <div class="mb-3">
+            <label for="name" class="form-label">Service Name</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+        <div class="mb-3">
+            <label for="price" class="form-label">Price</label>
+            <input type="number" class="form-control" id="price" name="price" required>
+            <small class="form-text text-muted">Base Price: ₹{{ category.base_price }}</small>
+        </div>
+        <div class="mb-3">
+            <label for="time_required" class="form-label">Duration</label>
+            <input type="number" class="form-control" id="time_required" name="time_required" required>
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <input type="text" class="form-control" id="description" name="description" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Add Service</button>
+        <a href="/professional_home" class="btn btn-dark mx-2">Cancel</a>
+    </form>
+</div>
+
+<script>
+    // JavaScript validation for price
+    function validatePrice() {
+        const basePrice = parseFloat("{{ category.base_price }}");
+        const enteredPrice = parseFloat(document.getElementById('price').value);
+
+        if (enteredPrice < basePrice) {
+            alert(`Price cannot be below the base price of ₹${basePrice}.`);
+            return false; // Prevent form submission
+        }
+
+        return true;
+    }
+</script>
+
+
+
+
+
+
+{% endblock body %}

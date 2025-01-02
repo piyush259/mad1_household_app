@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="container mt-5">
+    <div class="row">
+        <!-- Left Section: Customer Details -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow rounded">
+                <div class="card-body">
+                    <h1 class="text-primary text-center">{{ customer.user.name }}</h1>
+                    <hr>
+                    <p><strong>Email:</strong> {{ customer.user.email }}</p>
+                    <p><strong>Username:</strong> {{ customer.user.username }}</p>
+                    <p><strong>Phone:</strong> {{ customer.user.phone_number }}</p>
+                    <p><strong>Address:</strong> {{ customer.user.address or 'N/A' }}</p>
+                    <p><strong>State:</strong> {{ customer.user.state or 'N/A' }}</p>
+                    <p><strong>Pincode:</strong> {{ customer.user.pincode or 'N/A' }}</p>
+                    <p><strong>Account Created:</strong> {{ customer.user.date_created.strftime('%Y-%m-%d') }}</p>
+
+                    <div class="mt-4 text-center">
+                        <h5>
+                            <span class="badge 
+                                {% if customer.user.is_blocked %} bg-danger text-white
+                                {% else %} bg-success {% endif %}">
+                                {% if customer.user.is_blocked %}
+                                Blocked
+                                {% else %}
+                                Active
+                                {% endif %}
+                            </span>
+                        </h5>
+
+                        <!-- Action Buttons -->
+                        <div class="mt-3 d-flex justify-content-center">
+                            {% if customer.user.is_blocked %}
+                            <form action="/admin/unblock_customer/{{customer.id }}" method="POST" class="me-2">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-person-check"></i> Unblock
+                                </button>
+                            </form>
+                            {% else %}
+                            <form action="/admin/block_customer/{{customer.id }}" method="POST" class="me-2">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bi bi-person-x"></i> Block
+                                </button>
+                            </form>
+                            {% endif %}
+                            <a href="/" class="btn btn-dark">
+                                <i class="bi bi-arrow-left"></i> Back
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+     <!-- Right Section: Service Requests Chart -->
+     <div class="col-md-6">
+        <div class="card shadow rounded">
+            <div class="card-body">
+                <h3 class="text-center">Service Requests</h3>
+                <canvas id="serviceRequestChart" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+// Pass status_counts from backend to JavaScript
+const statusCounts = JSON.parse('{{ status_counts | tojson | safe }}');
+const ctx = document.getElementById('serviceRequestChart').getContext('2d');
+
+// Create the Bar Graph
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: ['Requested', 'Closed', 'On Going', 'Cancelled', 'Rejected'],
+        datasets: [{
+            label: 'Service Requests',
+            data: [statusCounts.requested, statusCounts.closed, statusCounts.assigned, statusCounts.cancelled, statusCounts.rejected],
+            backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#6c757d'],
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Number of Requests'
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                callbacks: {
+                    label: function (context) {
+                        return `${context.raw} requests`;
+                    }
+                }
+            }
+        }
+    }
+});
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   
+{% endblock body %}

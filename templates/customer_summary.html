@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="container" style="background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+    <h1 class="text-center mb-4">Service Request Summary</h1>
+    <p class="text-center text-muted">Track the status of your service requests.</p>
+
+    <!-- Bar Graph Section -->
+    <div class="my-5 text-center">
+        <!-- Set width and height for a smaller chart -->
+        <canvas id="serviceRequestChart" width="400" height="300"></canvas>
+    </div>
+
+    <!-- Navigation Back -->
+    <div class="text-center">
+        <a href="{{ url_for('main.customer_home') }}" class="btn btn-primary">Back to Dashboard</a>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Bar Graph Data
+    const statusCounts = JSON.parse('{{ status_counts | tojson | safe }}');
+    const ctx = document.getElementById('serviceRequestChart').getContext('2d');
+
+    // Create the Bar Graph
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Requested', 'Closed', 'On Going'],
+            datasets: [{
+                label: 'Service Requests',
+                data: [statusCounts.requested, statusCounts.closed, statusCounts.assigned],
+                backgroundColor: ['#007bff', '#28a745', '#ffc107'],
+            }]
+        },
+        options: {
+            responsive: false, // Turn off responsiveness to respect fixed width/height
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Requests'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Status'
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="container mt-5">
+    <div class="row">
+        <!-- Left Section: Professional Details -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow rounded">
+                <div class="card-body">
+                    <h1 class="text-primary text-center">{{ professional.user.name }}</h1>
+                    <hr>
+                    <p><strong>Service Type:</strong> {{ professional.service_type }}</p>
+                    <p><strong>Experience:</strong> {{ professional.experience }} years</p>
+                    <p><strong>Rating:</strong> {{ professional.rating }}</p>
+                    <p><strong>Total Ratings:</strong> {{ professional.total_ratings }}</p>
+                    <p><strong>Uploaded Document: </strong>
+                        <a href="{{ url_for('static', filename=professional.file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">View PDF</a>
+                    </p>
+                    <p><strong>Phone:</strong> {{ professional.user.phone_number }}</p>
+                    <p><strong>Email:</strong> {{ professional.user.email }}</p>
+                    <p><strong>Created date:</strong> {{ professional.user.date_created }}</p>
+
+                    <div class="mt-4 text-center">
+                        <h5>
+                            <span class="badge 
+                                {% if professional.user.is_blocked %} bg-danger text-white
+                                {% else %}
+                                    {% if professional.status == 'approved' %} bg-success
+                                    {% elif professional.status == 'rejected' %} bg-danger
+                                    {% else %} bg-warning text-dark 
+                                    {% endif %}
+                                {% endif %}">
+                                {% if professional.user.is_blocked %}
+                                Blocked
+                                {% else %}
+                                {{ professional.status|capitalize }}
+                                {% endif %}
+                            </span>
+                        </h5>
+
+                        <!-- Action Buttons -->
+                        <div class="mt-3 d-flex justify-content-center">
+                            {% if professional.status == 'pending' %}
+                            <form action="/admin/approve/{{ professional.id }}" method="POST" class="me-2">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-circle"></i> Approve
+                                </button>
+                            </form>
+                            <form action="/admin/reject/{{ professional.id }}" method="POST" class="me-2">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bi bi-x-circle"></i> Reject
+                                </button>
+                            </form>
+                            {% endif %}
+
+                            {% if professional.status == 'approved' %}
+                            {% if professional.user.is_blocked %}
+                            <form action="/admin/unblock/{{ professional.id }}" method="POST" class="me-2">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-person-check"></i> Unblock
+                                </button>
+                            </form>
+                            {% else %}
+                            <form action="/admin/block/{{ professional.id }}" method="POST" class="me-2">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bi bi-person-x"></i> Block
+                                </button>
+                            </form>
+                            {% endif %}
+                            {% endif %}
+
+                            <a href="/admin_home" class="btn btn-dark">
+                                <i class="bi bi-arrow-left"></i> Back
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Section: Charts -->
+        <div class="col-md-6">
+            <div class="card shadow rounded mb-4">
+                <div class="card-body">
+                    <h3 class="text-center">Reviews & Ratings</h3>
+                    <canvas id="ratingsChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+            <div class="card shadow rounded">
+                <div class="card-body">
+                    <h3 class="text-center">Service Requests</h3>
+                    <canvas id="serviceRequestsChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    fetch("{{ url_for('main.get_professional_data', id=professional.id) }}")
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            // Process Ratings Data
+            const ratingsData = data.ratings;
+            const ratingsCtx = document.getElementById('ratingsChart').getContext('2d');
+            new Chart(ratingsCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['5 Stars', '4 Stars', '3 Stars', '2 Stars', '1 Star'],
+                    datasets: [{
+                        label: 'Ratings Distribution',
+                        data: [
+                            ratingsData["5_stars"],
+                            ratingsData["4_stars"],
+                            ratingsData["3_stars"],
+                            ratingsData["2_stars"],
+                            ratingsData["1_stars"]
+                        ],
+                        backgroundColor: ['#4CAF50', '#2196F3', '#FFC107', '#FF5722', '#9E9E9E'],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return `${context.label}: ${context.raw} votes`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Process Service Requests Data
+            const serviceRequestsData = data.service_requests;
+            const requestsCtx = document.getElementById('serviceRequestsChart').getContext('2d');
+            new Chart(requestsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Received', 'On Progress', 'Closed', 'Rejected'],
+                    datasets: [{
+                        label: 'Service Requests',
+                        data: [
+                            serviceRequestsData["received"],
+                            serviceRequestsData["assigned"],
+                            serviceRequestsData["closed"],
+                            serviceRequestsData["rejected"]
+                        ],
+                        backgroundColor: ['#2196F3', '#FFC107', '#4CAF50', '#FF5722']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Requests'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return `${context.raw} requests`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error fetching summary data:', error));
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock body %}

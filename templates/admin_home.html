@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="container">
+    <h1 style="text-align: center;" class="my-3">Admin Dashboard</h1>
+
+    <!-- Service Category Section -->
+    <div class="service-block border rounded p-4 mb-4">
+        <h2 class="text-muted">Service Category</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Service Category Name</th>
+                    <th scope="col">Base Price</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category in categories %}
+                <tr>
+                    <th scope="row">
+                        <a href="/admin/service_details/{{ category.id }}" class="text-decoration-none">{{ category.id
+                            }}</a>
+                    </th>
+                    <td>{{ category.name }}</td>
+                    <td>{{ category.base_price }}</td>
+                    <td>
+                        <a href="/admin/edit_servicecategory/{{ category.id }}"
+                            class="btn btn-danger btn-sm mx-2">Edit</a>
+                        <a href="/admin/servicecategory/delete/{{ category.id }}"
+                            class="btn btn-dark btn-sm mx-2">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Add Service Button -->
+        <div class="d-flex justify-content-end my-3">
+            <a href="/add_servicecategory" class="btn btn-success">+ Add a Service Category</a>
+        </div>
+    </div>
+
+    <div class="service-block border rounded p-4 mb-4">
+        <h2 class="text-muted">Customers</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">State</th>
+                    <th scope="col">Pincode</th>
+                    <th scope="col">Phone</th>
+                    <th scope="col">Date Created</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customer %}
+                <tr>
+                    <th scope="row">
+                        <a href="/admin/customer_details/{{ customer.id }}" class="text-decoration-none">{{ customer.id
+                            }}</a>
+                    </th>
+                    <td>{{ customer.user.name }}</td>
+                    <td>{{ customer.user.email }}</td>
+                    <td>{{ customer.user.state }}</td>
+                    <td>{{ customer.user.pincode }}</td>
+                    <td>{{ customer.user.phone_number }}</td>
+                    <td>{{ customer.user.date_created.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        {% if customer.user.is_blocked %}
+                        <a href="/admin/unblock_customer/{{ customer.id }}" class="btn btn-success btn-sm mx-2">Unblock</a>
+                        {% else %}
+                        <a href="/admin/block_customer/{{ customer.id }}" class="btn btn-danger btn-sm mx-2">Block</a>
+                        {% endif %}
+                        <a href="/admin/customer/delete/{{ customer.id }}" class="btn btn-dark btn-sm mx-2">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+   
+
+        </table>
+    </div>
+
+    <!-- Professionals Section -->
+    <div class="service-block border rounded p-4 mb-4">
+        <h2 class="text-muted">Professionals</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Registered Category</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Phone</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for professional in professionals %}
+                {% if professional.status == 'approved' %}
+                <tr>
+                    <th scope="row">
+                        <a href="/admin/professional_details/{{ professional.id }}" class="text-decoration-none">
+                           {{ professional.id }}</a>
+                    </th>
+                    <td>{{ professional.user.name }}</td>
+                    <td>{{professional.category.name}}</td>
+                    <td>{{ professional.user.email }}</td>
+                    <td>{{ professional.user.phone_number }}</td>
+                    <td>
+                        {% if professional.user.is_blocked %}
+                            Blocked
+                        {% elif professional.status %}
+                            {{ professional.status }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="/admin/professional_details/{{ professional.id }}" class="btn btn-danger btn-sm mx-2">View</a>
+                        <a href="/admin/professional/delete/{{ professional.id }}"
+                            class="btn btn-dark btn-sm mx-2">Delete</a>
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pending Registrations Section -->
+    <div class="service-block border rounded p-4 mb-4">
+        <h2 class="text-muted">Pending Registrations</h2>
+
+        <!-- Filter only professionals with 'pending' status -->
+        {% set pending_professionals = professionals | selectattr('status', 'equalto', 'pending') | list %}
+
+        <!-- Show table only if there are pending professionals -->
+        {% if pending_professionals %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>PDF Certificate</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for professional in pending_professionals %}
+                <tr>
+                    <th scope="row">
+                        <a href="/admin/professional_details/{{ professional.id }}" class="text-decoration-none">{{
+                            professional.id }}</a>
+                    </th>
+                    <td>{{ professional.user.name }}</td>
+                    <td>{{ professional.user.email }}</td>
+                    <td>{{ professional.status }}</td>
+                    <td>
+                        <a href="{{ url_for('static', filename=professional.file_path) }}" target="_blank">View PDF</a>
+                    </td>
+                    <td>
+                        <!-- Approve and Reject Buttons -->
+                        <form action="/admin/approve/{{ professional.id }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn btn-success btn-sm mx-2">Approve</button>
+                        </form>
+                        <form action="/admin/reject/{{ professional.id }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn btn-dark btn-sm mx-2">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">No pending registrations.</p>
+        {% endif %}
+    </div>
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>All Service Requests</h2>
+    
+            <!-- Search Form -->
+            <form method="GET" action="{{ url_for('main.admin_home') }}" class="d-flex">
+                <!-- Search Type Dropdown -->
+                <select name="search_type" id="search_type" class="form-select me-2">
+                    <option value="">Search By</option>
+                    <option value="service_name" {% if search_type == 'service_name' %}selected{% endif %}>Service Name</option>
+                    <option value="customer_name" {% if search_type == 'customer_name' %}selected{% endif %}>Customer Name</option>
+                    <option value="professional_name" {% if search_type == 'professional_name' %}selected{% endif %}>Professional Name</option>
+                    <option value="status" {% if search_type == 'status' %}selected{% endif %}>Status</option>
+                </select>
+    
+                <!-- Search Box -->
+                <input
+                    type="text"
+                    name="search_query"
+                    class="form-control me-2"
+                    placeholder="Search..."
+                    value="{{ search_query }}">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
+        </div>
+    
+        <!-- Service Requests Table -->
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>S No.</th>
+                    <th>Service Name</th>
+                    <th>Customer Name</th>
+                    <th>Professional Name</th>
+                    <th>Date of Request</th>
+                    <th>Date of Completion</th>
+                    <th>Status</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set serial = namespace(count=1) %} <!-- Initialize serial number counter -->
+    
+                <!-- Loop through filtered and searched service requests -->
+                {% for request in service_requests %}
+                <tr>
+                    <td>{{ serial.count }}</td>
+                    <td>{{ request.service.name or 'Unknown Service' }}</td>
+                    <td>{{ request.customer.user.name if request.customer and request.customer.user else 'N/A' }}</td>
+                    <td>{{ request.professional.user.name if request.professional and request.professional.user else 'N/A' }}</td>
+                    <td>{{ request.date_of_request.strftime('%Y-%m-%d') }}</td>
+                    <td>
+
+                        {% for service in service_history %}
+                            {% if service.service_request_id == request.id %}
+                                {{  service.date_of_completion.strftime('%Y-%m-%d') if service.date_of_completion else 'Pending' }}
+                            {% endif %}
+                        {% endfor %}
+                        {% if request.service_status == 'requested' %}
+                            Pending
+                        {% endif %}
+                    </td>
+                    <td>{{ request.service_status }}</td>
+                    <td>
+                        {% if request.service_status == 'requested' %}
+                            Service Requested
+                        {% elif request.service_status == 'cancelled' %}
+                            Service Cancelled
+                        {% elif request.service_status == 'closed' %}
+                            Service Closed
+                        {% elif request.service_status == 'rejected' %}
+                            Service Rejected
+                        {% elif request.service_status == 'completed' %}
+                            Service Completed
+                        {% else %}
+                            Service Assigned
+                        {% endif %}
+                    </td>
+                </tr>
+                {% set serial.count = serial.count + 1 %} <!-- Increment serial number -->
+                {% endfor %}
+            </tbody>
+        </table>
+   
+    
+    
+    </div>
+
+</div>
+{% endblock body %}

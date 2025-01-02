@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="container" style="background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+    <h1 class="text-center mb-4">Admin Summary</h1>
+    <p class="text-center text-muted">Overview of customer ratings and service request statuses.</p>
+
+    <!-- Charts Section -->
+    <div class="row my-5">
+        <!-- Customer Ratings Pie Chart -->
+        <div class="col-md-6 text-center">
+            <h4>Customer Ratings Distribution</h4>
+            <canvas id="ratingsPieChart" width="400" height="300"></canvas>
+        </div>
+
+        <!-- Service Requests Bar Chart -->
+        <div class="col-md-6 text-center">
+            <h4>Service Request Summary</h4>
+            <canvas id="serviceRequestsBarChart" width="400" height="300"></canvas>
+        </div>
+    </div>
+
+    <!-- Navigation Back -->
+    <div class="text-center">
+        <a href="{{ url_for('main.admin_home') }}" class="btn btn-primary">Back to Dashboard</a>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Data for Ratings Pie Chart
+    const ratingDistribution = JSON.parse('{{ rating_distribution | tojson | safe }}');
+    const ratingsPieCtx = document.getElementById('ratingsPieChart').getContext('2d');
+    new Chart(ratingsPieCtx, {
+        type: 'pie',
+        data: {
+            labels: ['1 Star', '2 Stars', '3 Stars', '4 Stars', '5 Stars'],
+            datasets: [{
+                label: 'Customer Ratings',
+                data: [ratingDistribution[1], ratingDistribution[2], ratingDistribution[3], ratingDistribution[4], ratingDistribution[5]],
+                backgroundColor: ['#ff5722', '#ffc107', '#03a9f4', '#8bc34a', '#4caf50']
+            }]
+        },
+        options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: 1.5, // Adjust this to control the chart size
+    }
+    });
+
+    // Data for Service Requests Bar Chart
+    const statusCounts = JSON.parse('{{ status_counts | tojson | safe }}');
+    const serviceRequestsBarCtx = document.getElementById('serviceRequestsBarChart').getContext('2d');
+    new Chart(serviceRequestsBarCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Requested', 'Closed', 'Ongoing'],
+            datasets: [{
+                label: 'Service Requests',
+                data: [statusCounts.requested, statusCounts.closed, statusCounts.assigned],
+                backgroundColor: ['#007bff', '#28a745', '#ffc107']
+            }]
+        },
+        options: {
+            responsive: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Requests'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Status'
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

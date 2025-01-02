@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="container" style="background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+    <h3 class="text-center">Professional Home Page</h3>
+
+    {% if professional %}
+    <div class="alert alert-info text-center mt-4" role="alert">
+        <strong>Registered Category:</strong> {{ professional.category.name }}
+    </div>
+    {% endif %}
+    <div style="position: absolute; top: 55px; right: 5px; width: 150px; height: 60px;">
+        <div class="card text-center shadow-sm" style="border-radius: 8px; font-size: 0.9rem;">
+            <div class="card-body p-2">
+                <h6 class="card-title text-muted mb-1">Overall Rating</h6>
+                <h4 class="text-success mb-0">{{ professional.rating | round(1) }}</h4>
+                <small class="text-muted">({{ professional.total_ratings }} reviews)</small>
+            </div>
+        </div>
+    </div>
+    <!-- Services Section -->
+    <div class="service-block border rounded p-4 mb-4" style="background-color: #f9f9f9;">
+        <h2 class="text-muted">Your Services</h2>
+        {% if services %}
+        <table class="table table-hover mt-3">
+            <thead class="thead-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Description</th>
+                    <th>Time</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for service in services %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ service.name }}</td>
+                    <td>₹{{ service.price }}</td>
+                    <td>{{ service.description }}</td>
+                    <td>{{ service.time_required }} mins</td>
+                    <td>
+                        <a href="/edit_service/{{ service.id }}" class="btn btn-warning btn-sm">Edit</a>
+                        <a href="/professional/service/delete/{{ service.id }}" class="btn btn-danger btn-sm">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">You have not added any services yet.</p>
+        {% endif %}
+        <div class="d-flex justify-content-end">
+            {% if professional %}
+            <a href="/category/{{ professional.category_id }}/add-service" class="btn btn-primary">+ Add a Service</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Today's Services Section -->
+    <div class="border rounded p-4 mb-4" style="background-color: #f7fbff;">
+        <h2 class="text-primary">Today's Services</h2>
+        <table class="table table-striped mt-3">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Service ID</th>
+                    <th>Service</th>
+                    <th>Customer</th>
+                    <th>Contact No.</th>
+                    <th>Request Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in service_requests %}
+                <tr>
+                    <td>{{ request.id }}</td>
+                    <td>{{ request.service.name }}</td>
+                    <td>
+                        {% if request.customer and request.customer.user %}
+                        {{ request.customer.user.name }}
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if request.customer and request.customer.user %}
+                        {{ request.customer.user.phone_number }}
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </td>
+                    <td>{{ request.date_of_request.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        {{ request.service_status}}
+                    </td>
+                    <td>{% if request.service_status == 'requested' %}
+                        <form action="/update-request-status" method="post" style="display: inline;">
+                            <input type="hidden" name="request_id" value="{{ request.id }}">
+                            <button name="action" value="accept" class="btn btn-success btn-sm">Accept</button>
+                            <button name="action" value="reject" class="btn btn-danger btn-sm">Reject</button>
+                        </form>
+                        {% elif request.service_status == 'assigned' %}
+                        <form action="{{ url_for('main.complete_service') }}" method="post" style="display: inline;">
+                            <input type="hidden" name="service_request_id" value="{{ request.id }}">
+                            <button class="btn btn-primary btn-sm">Complete</button>
+                        </form>
+                        
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Closed Services Section -->
+    <div class="border rounded p-4 mb-4" style="background-color: #f9f9f9;">
+        <h2 class="text-success">Closed Services</h2>
+        <table class="table table-striped mt-3">
+            <thead class="thead-light">
+                <tr>
+                    <th>Service ID</th>
+                    <th>Service</th>
+                    <th>Customer</th>
+                    <th>Contact No.</th>
+                    <th>Date of Request</th>
+                    <th>Date of Completion</th>
+                    <th>Rating</th>
+                    <th>Review</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for request in closed_requests %}
+                    <tr>
+                        <td>{{ request.id }}</td>
+                        <td>{{ request.service.name }}</td>
+                        <td>
+                            {% if request.customer and request.customer.user %}
+                            {{ request.customer.user.name }}
+                            {% else %}
+                            N/A
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if request.customer and request.customer.user %}
+                            {{ request.customer.user.phone_number }}
+                            {% else %}
+                            N/A
+                            {% endif %}
+                        </td>
+                        <td>{{ request.date_of_request.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ request.date_of_completion.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            {% if request.reviews|length > 0 %}
+                                {% set avg_rating = request.reviews | map(attribute='rating') | sum / request.reviews | length %}
+                                {{ avg_rating | round(1) }}
+                            {% else %}
+                                No Rating
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if request.reviews|length > 0 %}
+                                {% for review in request.reviews %}
+                                    <p class="mb-0">{{ review.review }}</p>
+                                {% endfor %}
+                            {% else %}
+                                No Review
+                            {% endif %}
+                        </td>
+                    </tr>
+                    
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

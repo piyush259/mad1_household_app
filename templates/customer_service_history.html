@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="border rounded p-4 mb-4" style="background-color: #f9f9f9;">
+    <h2 class="text-success">Service History</h2>
+    <table class="table table-striped mt-3">
+        <thead class="thead-light">
+            <tr>
+                <th>Service ID</th>
+                <th>Service</th>
+                <th>Service Type</th>
+                <th>Professional</th>
+                <th>Contact No.</th>
+                <th>Date of Request</th>
+                <th>Date of Completion</th>
+                <th>Rating</th>
+                <th>Review</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for request in service_requests %}
+            <tr>
+                <td>{{loop.index}}</td>
+                <td>{{ request.service.name }}</td>
+                <td>{{ request.service.category.name }}</td>
+                <td>
+                    {% if request.professional and request.professional.user %}
+                    {{ request.professional.user.name }}
+                    {% else %}
+                    N/A
+                    {% endif %}
+                </td>
+                <td>
+                    {% if request.professional and request.professional.user %}
+                    {{ request.professional.user.phone_number }}
+                    {% else %}
+                    N/A
+                    {% endif %}
+                </td>
+                <td>{{ request.date_of_request.strftime('%Y-%m-%d') }}</td>
+                <td>
+                    {% if request.date_of_completion %}
+                    {{ request.date_of_completion.strftime('%Y-%m-%d') }}
+                    {% else %}
+                    Pending
+                    {% endif %}
+                </td>
+                <td>
+                    {% if request.reviews|length > 0 %}
+                    {% set avg_rating = request.reviews | map(attribute='rating') | sum / request.reviews | length %}
+                    {{ avg_rating | round(1) }}
+                    {% else %}
+                    No Rating
+                    {% endif %}
+                </td>
+                <td>
+                    {% if request.reviews|length > 0 %}
+                    {% for review in request.reviews %}
+                    <p class="mb-0">{{ review.review }}</p>
+                    {% endfor %}
+                    {% else %}
+                    No Review
+                    {% endif %}
+                </td>
+                
+                <td>
+                    {% if request.service_status == 'requested' %}
+                    <form method="POST" action="{{ url_for('main.cancel_service') }}" style="display: inline;">
+                        <input type="hidden" name="service_request_id" value="{{ request.id }}">
+                        <button type="submit" class="btn btn-danger btn-sm" style="white-space: nowrap;"
+                            onclick="return confirm('Are you sure you want to cancel this service?');">Cancel Request</button>
+                    </form>
+                    {% elif request.service_status == 'assigned' %}
+                    <form method="GET" action="{{ url_for('main.submit_review', service_request_id=request.id) }}" style="display: inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Close It?</button>
+                    </form>
+                    {% elif request.service_status == 'completed' %}
+                    <form method="GET" action="{{ url_for('main.submit_review', service_request_id=request.id) }}" style="display: inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Close It?</button>
+                    </form>
+                    {% elif request.service_status == 'closed' %}
+                    <form method="POST" action="{{ url_for('main.reopen_service', id=request.id ) }}" style="display: inline;">
+                        <input type="hidden" name="reopen_service" value="{{ request.id }}">
+                        <button type="submit" class="btn btn-danger btn-sm" style="white-space: nowrap;"
+                            onclick="return confirm('Are you sure you want to reopen this service?');">Reopen</button>
+                    </form>
+                    {% else %}
+                    {{ request.service_status|capitalize }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</div>
+
+{% endblock %}

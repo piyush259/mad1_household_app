@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="container my-5">
+    <div class="card shadow-lg border-0">
+        <!-- Header -->
+        <div class="card-header bg-primary text-white text-center py-4">
+            <h2>Edit Professional Profile</h2>
+        </div>
+        <!-- Body -->
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('main.edit_professional_profile') }}">
+
+                <!-- Personal Details Section -->
+                <h5 class="mb-3 text-primary">Personal Details</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ professional.user.name }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ professional.user.email }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="phone_number" class="form-label">Phone Number</label>
+                        <input type="text" class="form-control" id="phone_number" name="phone_number" value="{{ professional.user.phone_number }}" required>
+                    </div>
+                </div>
+
+                <!-- Professional Details Section -->
+                <h5 class="mb-3 text-primary">Professional Details</h5>
+                <div class="row">
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="experience" class="form-label">Experience (in years)</label>
+                        <input type="number" class="form-control" id="experience" name="experience" value="{{ professional.experience }}" required>
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="4">{{ professional.description }}</textarea>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <input type="text" class="form-control" id="address" name="address" value="{{ professional.user.address }}">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="state" class="form-label">State</label>
+                        <input type="text" class="form-control" id="state" name="state" value="{{ professional.user.state }}">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="pincode" class="form-label">Pincode</label>
+                        <input type="text" class="form-control" id="pincode" name="pincode" value="{{ professional.user.pincode }}">
+                    </div>
+                </div>
+
+                <!-- Password Update Section -->
+                <h5 class="mb-3 text-primary">Update Password</h5>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="current_password" class="form-label">Current Password</label>
+                        <input type="password" class="form-control" id="current_password" name="current_password">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="new_password" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="confirm_password" class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+                    </div>
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="text-end mt-4">
+                    <button type="submit" class="btn btn-success">Save Changes</button>
+                    <a href="{{ url_for('main.professional_home') }}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

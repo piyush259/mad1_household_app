@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% block body %}
+
+<style>
+    .service-container {
+        max-width: 960px;
+        margin: 2rem auto;
+        padding: 1.5rem;
+        background: #f9f9f9;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .service-header {
+        text-align: center;
+        padding: 1.5rem;
+        border-bottom: 1px solid #ddd;
+    }
+    .service-header h1 {
+        font-size: 2.4rem;
+        font-weight: 700;
+        color: #333;
+    }
+    .service-header p {
+        margin: 0.5rem 0;
+        font-size: 1.1rem;
+        color: #666;
+    }
+    .rating-badge {
+        display: inline-block;
+        background-color: #28a745;
+        color: #fff;
+        font-size: 0.9rem;
+        padding: 0.3rem 0.6rem;
+        border-radius: 20px;
+        margin-right: 0.5rem;
+    }
+    .price-section {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #ff3936;
+        text-align:left;
+
+
+
+    }
+    .details-section {
+        padding: 1.5rem;
+    }
+    .details-section p {
+        margin-bottom: 0.8rem;
+        font-size: 1.1rem;
+        color: #444;
+    }
+    .btn-book-now {
+        display: block;
+        margin: 2rem auto 0;
+        font-size: 1.2rem;
+        padding: 0.75rem 2rem;
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        color: #fff;
+        text-align: center;
+        text-decoration: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s;
+    }
+    .btn-book-now:hover {
+        background-color: #0056b3;
+    }
+    .reviews-section {
+        margin-top: 2rem;
+    }
+    .review-item {
+        padding: 1rem 0;
+        border-bottom: 1px solid #ddd;
+    }
+    .review-item:last-child {
+        border-bottom: none;
+    }
+    .review-item p {
+        margin: 0.5rem 0;
+        color: #555;
+    }
+</style>
+
+<div class="container service-container">
+    <!-- Header Section -->
+    <div class="service-header">
+        <h1>{{ service.name }}</h1>
+        <p>
+            <span class="rating-badge">
+                {{ service.professional.rating|round(1) if service.professional and service.professional.rating is not none else 'N/A' }}
+            </span>
+            <small>({{ service.professional.total_ratings if service.professional else 'N/A' }} Ratings)</small>
+        </p>
+        <p><strong>Provided By:</strong> {{ service.professional.user.name if service.professional and service.professional.user else 'N/A' }}</p>
+        <p><strong>Location:</strong> {{ service.professional.user.state if service.professional and service.professional.user else 'Unknown' }}</p>
+    </div>
+    
+    <!-- Details Section -->
+    <div class="details-section">
+        <p><strong>Description:</strong> {{ service.description or 'No description available' }}</p>
+        <p><strong>Created Date:</strong> {{ service.date_created.strftime('%Y-%m-%d') }}</p>
+        
+        <!-- Beautiful Price Section -->
+        <div class="price-section">
+            ₹{{ service.price or 'Contact for price' }}
+        </div>
+
+        <!-- Book Now Button -->
+        <form action="{{ url_for('main.book_service') }}" method="post">
+            <input type="hidden" name="customer_id" value="{{ current_user.id }}">
+            <input type="hidden" name="professional_id" value="{{ service.professional.id if service.professional else '' }}">
+            <input type="hidden" name="service_id" value="{{ service.id }}">
+        
+            <!-- Date Picker for Request Date -->
+            <div class="form-group">
+                <label for="date_of_request"><strong>Select Date:</strong></label>
+                <input type="date" id="date_of_request" name="date_of_request" class="form-control" required min="{{ current_date }}">
+
+            </div>
+        
+            <button type="submit" class="btn-book-now" {% if not service.professional %}disabled{% endif %}>
+                Book Now
+            </button>
+        </form>
+        
+
+    <!-- Reviews Section -->
+    <div class="reviews-section">
+        <h2>Customer Reviews</h2>
+        {% if service.professional and service.professional.reviews %}
+            {% for review in service.professional.reviews %}
+                <div class="review-item">
+                    <p>
+                        <span class="rating-badge">{{ review.rating }}/5</span>
+                        <small class="text-muted">(Reviewed on {{ review.review_date.strftime('%Y-%m-%d') }})</small>
+                    </p>
+                    <p>{{ review.review }}</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No reviews available for this service.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock body %}

@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="container mt-5" style="max-width: 600px;">
+    <h3 class="text-center">Edit Date of Request</h3>
+    <form method="POST" action="{{ url_for('main.edit_date', service_request_id=service_request.id) }}">
+        <div class="form-group">
+            <label for="new_date">New Date of Request:</label>
+            <input type="date" id="new_date" name="new_date" class="form-control" required value="{{ service_request.date_of_request.strftime('%Y-%m-%d') }}">
+        </div>
+        <div class="mt-3 text-center">
+            <button type="submit" class="btn btn-success">Update Date</button>
+            <a href="{{ url_for('main.customer_home') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

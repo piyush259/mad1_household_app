@@ -1,0 +1,55 @@
+<!-- templates/category_services.html -->
+{% extends 'base.html' %}
+{% block body %}
+<div class="container my-5">
+    <h1 class="text-center mb-4 text-primary">Manage {{ category.name }} Services</h1>
+    <p class="text-center text-muted">Total Services Available: <strong>{{ services|length }}</strong></p>
+
+    {% if services and services|length > 0 %}
+        <div class="row">
+            {% for service in services %}
+            <div class="col-md-4">
+                <div class="card shadow-sm my-3 h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title text-success">{{ loop.index }}. {{ service.name }}</h5>
+                        <p class="card-text text-muted">
+                            <strong>Description:</strong> {{ service.description or 'No description available' }}
+                        </p>
+                        <p class="card-text"><strong>Price:</strong> ₹{{ service.price }}</p>
+                        <p class="card-text"><strong>Duration:</strong> {{ service.time_required }} minutes</p>
+                        <p class="card-text">
+                            <strong>Professional:</strong> 
+                            {{ service.professional.user.name if service.professional and service.professional.user else 'N/A' }}
+                        </p>
+                        <p class="card-text">
+                            <strong>Rating:</strong> 
+                            {{ service.professional.rating|round(1) if service.professional and service.professional.rating is not none else 'N/A' }}
+                            <small class="text-muted">(Rated by {{ service.professional.total_ratings if service.professional else 'N/A' }} customers)</small>
+                        </p>
+                        <p class="card-text">
+                            <strong>Location:</strong> 
+                            {{ service.professional.user.state if service.professional and service.professional.user else 'Unknown' }}
+                        </p>
+                        <p class="card-text">
+                            <strong>Date Created:</strong> {{ service.date_created.strftime('%Y-%m-%d') }}
+                        </p>
+
+                        <!-- Delete Service Button -->
+                        <a href="/admin/service/delete/{{ service.id }}" 
+                           class="btn btn-dark btn-sm mt-auto w-100">Delete Service</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-warning text-center mt-5" role="alert">
+            No services are available in this category. Please add new services or check back later.
+        </div>
+    {% endif %}
+
+    <div class="text-center mt-4">
+        <a href="{{ url_for('main.admin_home') }}" class="btn btn-danger">Back to Admin Home</a>
+    </div>
+</div>
+{% endblock %}

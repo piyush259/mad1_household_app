@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="container">
+    <h1>Search</h1>
+    <form method="GET" action="{{ url_for('main.admin_search') }}" class="d-flex my-4">
+        <select name="filter_by" class="form-select me-2">
+            <option value="" disabled {% if not request.args.get('filter_by') %}selected{% endif %}>Select</option>
+            <option value="service" {% if request.args.get('filter_by') == 'service' %}selected{% endif %}>Service</option>
+            <option value="professional" {% if request.args.get('filter_by') == 'professional' %}selected{% endif %}>Professional</option>
+            <option value="customer" {% if request.args.get('filter_by') == 'customer' %}selected{% endif %}>Customer</option>
+            <option value="state" {% if request.args.get('filter_by') == 'state' %}selected{% endif %}>State</option>
+        </select>
+        <input
+            type="text"
+            class="form-control me-2"
+            name="query"
+            placeholder="Search for services, professionals, etc."
+            value="{{ request.args.get('query', '') }}"
+        >
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+</div>
+<div class="container mt-4">
+    <h1>Search Results</h1>
+    <p>Showing results for: {{ filter_by | capitalize }} - "{{ query }}"</p>
+
+    {% if results and results|length > 0 %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                {% if filter_by == 'service' %}
+                <th>Service Name</th>
+                <th>Service Category</th>
+                <th>Professional Name</th>
+                <th>Price</th>
+                <th>Category</th>
+                {% elif filter_by == 'professional' %}
+                <th>Professional Name</th>
+                <th>Service Type</th>
+                <th>Experience</th>
+                <th>Rating</th>
+                <th>Total Ratings</th>
+                <th>State</th>
+                {% elif filter_by == 'customer' %}
+                <th>Customer Name</th>
+                <th>Customer Address</th>
+                <th>State</th>
+                {% elif filter_by == 'state' %}
+                <th>Professional Name</th>
+                <th>Service Type</th>
+                <th>State</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in results %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                {% if filter_by == 'service' %}
+                <td>{{ result.name }}</td>
+                <td>{{ result.category.name }}</td>
+                <td>{{ result.professional.user.name if result.professional else 'N/A' }}</td>
+                <td>${{ result.price }}</td>
+                <td>{{ result.category.name }}</td>
+                {% elif filter_by == 'professional' %}
+                <td>{{ result.user.name }}</td>
+                <td>{{ result.service_type }}</td>
+                <td>{{ result.experience }} years</td>
+                <td>{{ result.rating }}</td>
+                <td>{{ result.total_ratings }}</td>
+                <td>{{ result.user.state }}</td>
+                {% elif filter_by == 'customer' %}
+                <td>{{ result.user.name }}</td>
+                <td>{{ result.user.address }}</td>
+                <td>{{ result.user.state }}</td>
+                {% elif filter_by == 'state' %}
+                <td>{{ result.user.name }}</td>
+                <td>{{ result.service_type }}</td>
+                <td>{{ result.user.state }}</td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No results found for your query.</p>
+    {% endif %}
+</div>
+{% endblock %}

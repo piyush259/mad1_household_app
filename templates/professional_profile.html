@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="container my-5">
+    <div class="card shadow-lg border-0">
+        <!-- Header -->
+        <div class="card-header bg-primary text-white text-center py-4">
+            <h2>Professional Profile</h2>
+        </div>
+        <!-- Body -->
+        <div class="card-body">
+            <div class="row">
+                <!-- Profile Picture and Name -->
+                <div class="col-md-4 text-center">
+                    
+                    <h3 class="text-primary">{{ professional.user.name }}</h3>
+                </div>
+                <!-- Professional Details -->
+                <div class="col-md-8">
+                    <table class="table table-borderless">
+                        <tbody>
+                            <tr>
+                                <th scope="row" class="text-muted">Email:</th>
+                                <td>{{ professional.user.email }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="text-muted">Username:</th>
+                                <td>{{ professional.user.username }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="text-muted">Phone Number:</th>
+                                <td>{{ professional.user.phone_number }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="text-muted">Service Type:</th>
+                                <td>{{ professional.service_type }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="text-muted">Experience:</th>
+                                <td>{{ professional.experience }} years</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="text-muted">Category:</th>
+                                <td>{{ professional.category.name if professional.category else 'Not Assigned' }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="text-muted">Rating:</th>
+                                <td>{{ professional.rating }} ({{ professional.total_ratings }} reviews)</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="text-muted">Status:</th>
+                                <td>{{ professional.status }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="text-muted">Description:</th>
+                                <td>{{ professional.description or 'No description provided' }}</td>
+                            </tr>
+                            
+                            <tr>
+                                <th scope="row" class="text-muted">Address:</th>
+                                <td>{{ professional.user.address or 'Not Provided' }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="text-muted">State:</th>
+                                <td>{{ professional.user.state or 'Not Provided' }}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="text-muted">Pincode:</th>
+                                <td>{{ professional.user.pincode or 'Not Provided' }}</td>
+                            </tr>
+
+                            <tr> 
+                                <th scope="row" class="text-muted">Account Created:</th>
+                                <td>{{ professional.user.date_created.strftime('%Y-%m-%d') }}</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- Edit Button -->
+        <div class="card-footer text-end">
+            <a href="/edit_professional_profile" 
+               class="btn btn-primary">Edit Profile</a>
+        </div>
+        <div class="card-footer text-end">
+            <a href="/delete_professional_profile" 
+               class="btn btn-danger">Delete Account</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
